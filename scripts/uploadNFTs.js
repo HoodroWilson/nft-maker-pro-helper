@@ -26,7 +26,7 @@ const app = async () => {
             let NFT = config[nftNumber];
 
             // Don't attempt to create this NFT if it's disabled in the configuration file, if it's not set then try to create it
-            if(NFT.config_enabled == null || NFT.config_enabled) {
+            if(NFT.enabled == null || NFT.enabled) {
                 console.log("processing the NFTs for " + NFT.asset_name);
                 for(let mintNumber = 1; mintNumber <= NFT.quantity; mintNumber++) {
                     // Setup the NFT's data
@@ -35,14 +35,27 @@ const app = async () => {
                         assetName: assetName,
                         previewImageNft: {
                             name: NFT.asset_name,
-                            mimetype: NFT.config_nft_mime_type,
-                            fileFromsUrl: NFT.config_nft_url
+                            mimetype: NFT.file.mime_type,
+                            fileFromsUrl: NFT.file.url
                         }
                     };
 
+                    // Setup any subfiles
+                    if(NFT.subfiles != null) {
+                        body.subfiles = [];
+                        for(let subfileNumber = 0; subfileNumber < NFT.subfiles.length; subfileNumber++) {
+                            let subfile = NFT.subfiles[subfileNumber];
+                            body.subfiles.push({
+                                name: NFT.asset_name,
+                                mimetype: subfile.mime_type,
+                                fileFromsUrl: subfile.url,
+                            });
+                        }
+                    }
+
                     // Make the API call to upload the NFT's data
                     console.log("processing " + assetName);
-                    let uploadNftUrl = "/UploadNft/" + process.env.NFT_MAKER_PRO_API_KEY + "/" + NFT.config_nft_maker_project_id;
+                    let uploadNftUrl = "/UploadNft/" + process.env.NFT_MAKER_PRO_API_KEY + "/" + NFT.nft_maker_project_id;
                     let alreadyExists = false;
                     let uploadNftResponse = await NFTMAKERPROAPI.post(uploadNftUrl, body).catch(function (error) {
                         if(error.response && error.response.data && error.response.data.errorCode === 66) {
