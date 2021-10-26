@@ -37,7 +37,7 @@ This script takes a `.json` file that outlines what the NFT details are like wha
 
 ### How to configure
 
-_Each `.json` file in the `/configuration/uploadNFTs` folder must be an array and therefore it can contain one or many NFTs to upload_
+Each `.json` file in the `/configuration/uploadNFTs` folder must be an array and therefore it can contain one or many NFTs to upload
 
 Here are required configuration values and their description:
 
@@ -47,7 +47,7 @@ Here are required configuration values and their description:
   * ex: if your `asset_name` is `LoganHoskinson` & you have the `quantity` set to `500` then your assets will be individually named from `LoganHoskinson001` to `LoganHoskinson500`
 * **quantity** - how many NFTs to create from this configuration
   * ex: `500`
-* **nft_maker_project_id** - NFT Project ID from NFT-MAKER PRO
+* **nft_maker_project_id** - NFT Project ID from NFT-MAKER PRO to create the NFTs in
   * ex: `18000`
 * **file** - JSON object with the NFT file URL that's publically accessible and the associated MIME type
   * the required keys are `url` and `mime_type` in the JSON object for `file`
@@ -56,13 +56,15 @@ Here are required configuration values and their description:
 
 Here are the optional configuration values and their description:
 
-* **enabled** - a boolean to decide to process this NFT or skip it, defaults to `true` - ex: `false`
-* **subfiles**  - JSON array with any additional files with a URL that's publically accessible and the associated MIME type for each
-   * the required keys are `url` and `mime_type` in each JSON object in the `subfiles` array
-   * ex: `https://cardano-caricatures-nfts.s3.amazonaws.com/LoganHoskinson/LoganHoskinson.jpg`
-   * ex: `image/png`, `image/gif`, `video/mp4`, `image/jpeg`
+* **enabled**
+  * a boolean to decide to process this NFT or skip it, defaults to `true` - ex: `false`
+* **subfiles**
+  * a JSON array with any additional files with a URL that's publically accessible and the associated MIME type for each
+  * the required keys are `url` and `mime_type` in each JSON object in the `subfiles` array
+  * ex: `https://cardano-caricatures-nfts.s3.amazonaws.com/LoganHoskinson/LoganHoskinson.jpg`
+  * ex: `image/png`, `image/gif`, `video/mp4`, `image/jpeg`
 
-Here are some example `.json` files:
+Here are some example `.json` configuration files:
 
 ```json
 [
@@ -101,14 +103,72 @@ Here are some example `.json` files:
 
 ---
 
+## `deleteNFTs.js`
+
+_Do you have a large number of NFTs that are already loaded into NFT-MAKER PRO that need to be deleted?_
+
+### Overview
+
+This script takes a `.json` file that outlines which NFTs to delete from an NFT Project either by the `id` or an `id_range`
+
+* If you use `id` then look on the Dashboard or use the API to get each of the IDs of the NFTs to put in the configuration manually
+* If you use `id_range` then it will likely attempt to delete an NFT that you do NOT own since everyone shares the same autoincrement ID for NFTs
+* If it encounters someone else's NFT then it will log it and move on
+* It doesn't do any harm to attempt to delete any that have already been deleted so you can restart the script at any point
+
+### How to run
+
+1. Find out the `ids` or `id_range` from your [NFT Project](https://docs.nft-maker.io/nft-maker-pro/creating-nfts) in the [NFT-MAKER PRO](https://pro.nft-maker.io/) Dashboard or using the `ListProjects` API
+3. Create a new `.json` file in the `/configuration/deleteNFTs` folder with one or many NFTs to delete under a single project
+4. Run the script using `node deleteNFTs.js NAME_OF_JSON_FILE_WITH_NO_EXTENSION`
+
+### How to configure
+
+Each `.json` file in the `/configuration/deleteNFTs` folder must be an object and therefore it can only delete NFTs under a single project at a time
+
+Here are required configuration values and their description:
+
+* **nft_maker_project_id**
+  * NFT Project ID from NFT-MAKER PRO to delete the NFTs from
+
+Here are the optional configuration values and their description:
+
+* **id**
+  * an array of Integer IDs to delete from an NFT project
+  * ex: `[11111, 22222, 33333]`
+* **id_range**
+  * an objects with a `max` and `min` key/value set with Integers of the  IDs to delete from an NFT project
+  * ex: `{ "min": 22222, "max": 33333 }`
+
+Here are some example `.json` configuration files:
+
+```json
+{
+  "nft_maker_project_id": "10000",
+  "ids": [11111, 22222, 33333]
+}
+```
+
+```json
+{
+  "nft_maker_project_id": "10000",
+  "id_range": {
+    "min": 22222,
+    "max": 33333
+  }
+}
+```
+
+---
+
 ## Future Scripts
-* Create `deleteNFTs.js` which accepts a list of NFT ids or a range of numbers to use as ids to attempt to delete
 * Create `fileToURL.js` which accepts a directory and uploads the contents to a public location and returns the URL to use with other scripts
 
 ## Future Improvements
 * Update it to read the configuration files from anywhere on the filesystem by passing in the file location instead of just the name of the file, setup `configuration` folder under `scripts` directory with examples, update README to point to example's instead of embedding in the page
 * Update `uploadNFTs.js` to accept custom metadata from JSON configuration for uploadNFTs.js
 * Update `uploadNFTs.js` to have a way to not include the NFT number appended to the asset name like LoganHoskinson001
+* Update `deleteNFTs.js` to have a way to just accept an NFT Project ID which it uses to lookup and delete all NFTs
 * Write process that allows you to specify special metadata key names to process the metadata values easily (ex: edition/version/etc being 1 of 10 or 1/10 with a $ / $$ format)
 * Add validation to finding the `.json` configuration file instead of throwing exception
 * Add validation to the `.json` configuration files required and optional fields

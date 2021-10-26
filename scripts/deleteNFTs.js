@@ -20,7 +20,9 @@ const app = async () => {
     if(config.ids != null && _.size(config.ids) > 0) {
         nftIDs = config.ids;
     } else if(config.id_range != null && _.isInteger(config.id_range.min) &&  _.isInteger(config.id_range.max)) {
-        // TODO: Loop thru the id_range and create the IDs to delete
+        for(let j = config.id_range.min; j <= config.id_range.max; j++) {
+            nftIDs.push(j);
+        }
     }
 
     console.log("processing " + _.size(nftIDs) + " NFTs");
