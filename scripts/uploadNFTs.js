@@ -1,15 +1,11 @@
 const _ = require("lodash");
-const axios = require("axios");
-const fs = require("fs");
-const path = require('path');
 const helper = require("../utilities/helper");
-require("dotenv").config({ path :__dirname + '/../.env' });
 
 // Setup API calls to NFT-MAKER PRO
-const NFTMAKERPROAPI = axios.create({ baseURL: "https://api.nft-maker.io/" });
+const NFTMAKERPROAPI = helper.getNFTMAKERPROAPI();
 
 // Process the command line argument for the configuration to use
-const config = JSON.parse(fs.readFileSync('../configuration/' + path.basename(__filename).split(".")[0] + "/" + process.argv.slice(2)[0] + '.json'));
+const config = helper.getConfig(__filename);
 
 // Wrap the execution in an async function so we can use await
 const app = async () => {

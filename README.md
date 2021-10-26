@@ -108,6 +108,7 @@ Here are some example `.json` files:
 ## Future Improvements
 * Update it to read the configuration files from anywhere on the filesystem by passing in the file location instead of just the name of the file, setup `configuration` folder under `scripts` directory with examples, update README to point to example's instead of embedding in the page
 * Update `uploadNFTs.js` to accept custom metadata from JSON configuration for uploadNFTs.js
+* Update `uploadNFTs.js` to have a way to not include the NFT number appended to the asset name like LoganHoskinson001
 * Write process that allows you to specify special metadata key names to process the metadata values easily (ex: edition/version/etc being 1 of 10 or 1/10 with a $ / $$ format)
 * Add validation to finding the `.json` configuration file instead of throwing exception
 * Add validation to the `.json` configuration files required and optional fields

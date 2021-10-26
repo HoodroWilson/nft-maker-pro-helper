@@ -1,4 +1,8 @@
 const _ = require("lodash");
+const axios = require("axios");
+const fs = require("fs");
+const path = require('path');
+require("dotenv").config({ path :__dirname + '/../.env' });
 
 /****************************************
  Sleep
@@ -29,4 +33,20 @@ module.exports.formatMetadata = (data) => {
  ****************************************/
 module.exports.formatEdition = (format, number, total) => {
     return _.replace(format, "$$", total).replace("$", number);
+};
+
+/****************************************
+ Get NFT-MAKER PRO API
+ Returns an initialized axios instance to use to make API calls
+ ****************************************/
+module.exports.getNFTMAKERPROAPI = () => {
+    return axios.create({ baseURL: "https://api.nft-maker.io/" });
+};
+
+/****************************************
+ Get Config
+ Returns the JSON object for the configuration based on the command line argument
+ ****************************************/
+module.exports.getConfig = (filename) => {
+    return JSON.parse(fs.readFileSync('../configuration/' + path.basename(filename).split(".")[0] + "/" + process.argv.slice(2)[0] + '.json'));
 };
