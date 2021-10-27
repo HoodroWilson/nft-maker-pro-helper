@@ -28,14 +28,6 @@ module.exports.formatMetadata = (data) => {
 };
 
 /****************************************
- Format Edition
- Returns a string based on a format, number and total to make the "edition" type metadata values (ex: 14 of 100)
- ****************************************/
-module.exports.formatEdition = (format, number, total) => {
-    return _.replace(format, "$$", total).replace("$", number);
-};
-
-/****************************************
  Get NFT-MAKER PRO API
  Returns an initialized axios instance to use to make API calls
  ****************************************/
@@ -49,4 +41,17 @@ module.exports.getNFTMAKERPROAPI = () => {
  ****************************************/
 module.exports.getConfig = (filename) => {
     return JSON.parse(fs.readFileSync('../configuration/' + path.basename(filename).split(".")[0] + "/" + process.argv.slice(2)[0] + '.json'));
+};
+
+/****************************************
+ Format Metadata Value
+ Returns the value after it's been through any one of the supported formats
+ Supported formats: edition (format: $ of $$, result: 14 of 250, key: $ is NFT unique number, $$ is the total number of NFTs)
+ ****************************************/
+module.exports.formatMetadataValue = (formatName, format, current, total) => {
+    if(formatName === "edition") {
+        return _.replace(_.replace(format, "$$", total), "$", current);
+    }
+
+    return current;
 };

@@ -23,6 +23,32 @@ const app = async () => {
         for(let j = config.id_range.min; j <= config.id_range.max; j++) {
             nftIDs.push(j);
         }
+    } else if(config.all) {
+        // Make the API call to get the NFT IDs
+        let perPage = 50;
+        let getNFTsURL = "/GetNfts/" + process.env.NFT_MAKER_PRO_API_KEY + "/" + config.nft_maker_project_id + "/free/" + perPage + "/";
+        let hasNFTsLeft = true;
+        let nftPage = 1;
+        while(hasNFTsLeft) {
+            let newNFTIDs = [];
+
+            let getNFTsResponse = await NFTMAKERPROAPI.get(getNFTsURL + nftPage).catch(function(error) {
+                console.error("error exception");
+                console.error(error.response.status + " - " + error.response.statusText);
+            });
+
+            if(getNFTsResponse != null && getNFTsResponse.status === 200) {
+                newNFTIDs = _.map(getNFTsResponse.data, 'id');
+                nftIDs = _.concat(nftIDs, newNFTIDs);
+            }
+
+            if(_.size(newNFTIDs) > 0) {
+                nftPage++;
+            } else {
+                hasNFTsLeft = false;
+            }
+            newNFTIDs = [];
+        }
     }
 
     console.log("processing " + _.size(nftIDs) + " NFTs");
