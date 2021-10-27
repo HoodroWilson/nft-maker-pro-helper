@@ -1,15 +1,11 @@
 const _ = require("lodash");
-const axios = require("axios");
-const fs = require("fs");
-const path = require('path');
 const helper = require("../utilities/helper");
-require("dotenv").config({ path :__dirname + '/../.env' });
 
 // Setup API calls to NFT-MAKER PRO
-const NFTMAKERPROAPI = axios.create({ baseURL: "https://api.nft-maker.io/" });
+const NFTMAKERPROAPI = helper.getNFTMAKERPROAPI();
 
 // Process the command line argument for the configuration to use
-const config = JSON.parse(fs.readFileSync('../configuration/' + path.basename(__filename).split(".")[0] + "/" + process.argv.slice(2)[0] + '.json'));
+const config = helper.getConfig(__filename);
 
 // Wrap the execution in an async function so we can use await
 const app = async () => {
@@ -30,7 +26,8 @@ const app = async () => {
                 console.log("processing the NFTs for " + NFT.asset_name);
                 for(let mintNumber = 1; mintNumber <= NFT.quantity; mintNumber++) {
                     // Setup the NFT's data
-                    let assetName = NFT.asset_name + _.padStart(mintNumber + "", NFT.quantity.toString().length, "0");
+                    let padding = _.padStart(mintNumber + "", NFT.quantity.toString().length, "0");
+                    let assetName = NFT.asset_name + padding;
                     let body = {
                         assetName: assetName,
                         previewImageNft: {
@@ -40,16 +37,31 @@ const app = async () => {
                         }
                     };
 
+                    // Setup any custom metadata
+                    if(NFT.metadata != null) {
+                        let customMetadata = _.cloneDeep(NFT.metadata);
+                        if(NFT.metadata_format != null) {
+                            _.forOwn(NFT.metadata_format, function(value, key) {
+                                customMetadata[key] = helper.formatMetadataValue(value, NFT.metadata[key].toString(), mintNumber, NFT.quantity);
+                            });
+                        }
+                        body.previewImageNft.metadataPlaceholder = helper.formatMetadata(customMetadata);
+                    }
+
                     // Setup any subfiles
                     if(NFT.subfiles != null) {
                         body.subfiles = [];
                         for(let subfileNumber = 0; subfileNumber < NFT.subfiles.length; subfileNumber++) {
                             let subfile = NFT.subfiles[subfileNumber];
-                            body.subfiles.push({
+                            let subfileData = {
                                 name: NFT.asset_name,
                                 mimetype: subfile.mime_type,
-                                fileFromsUrl: subfile.url,
-                            });
+                                fileFromsUrl: subfile.url
+                            };
+                            if(body.previewImageNft.metadataPlaceholder != null) {
+                                subfileData.metadataPlaceholder = body.previewImageNft.metadataPlaceholder;
+                            }
+                            body.subfiles.push(subfileData);
                         }
                     }
 

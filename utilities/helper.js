@@ -1,4 +1,8 @@
 const _ = require("lodash");
+const axios = require("axios");
+const fs = require("fs");
+const path = require('path');
+require("dotenv").config({ path :__dirname + '/../.env' });
 
 /****************************************
  Sleep
@@ -24,9 +28,30 @@ module.exports.formatMetadata = (data) => {
 };
 
 /****************************************
- Format Edition
- Returns a string based on a format, number and total to make the "edition" type metadata values (ex: 14 of 100)
+ Get NFT-MAKER PRO API
+ Returns an initialized axios instance to use to make API calls
  ****************************************/
-module.exports.formatEdition = (format, number, total) => {
-    return _.replace(format, "$$", total).replace("$", number);
+module.exports.getNFTMAKERPROAPI = () => {
+    return axios.create({ baseURL: "https://api.nft-maker.io/" });
+};
+
+/****************************************
+ Get Config
+ Returns the JSON object for the configuration based on the command line argument
+ ****************************************/
+module.exports.getConfig = (filename) => {
+    return JSON.parse(fs.readFileSync('../configuration/' + path.basename(filename).split(".")[0] + "/" + process.argv.slice(2)[0] + '.json'));
+};
+
+/****************************************
+ Format Metadata Value
+ Returns the value after it's been through any one of the supported formats
+ Supported formats: edition (format: $ of $$, result: 14 of 250, key: $ is NFT unique number, $$ is the total number of NFTs)
+ ****************************************/
+module.exports.formatMetadataValue = (formatName, format, current, total) => {
+    if(formatName === "edition") {
+        return _.replace(_.replace(format, "$$", total), "$", current);
+    }
+
+    return current;
 };
