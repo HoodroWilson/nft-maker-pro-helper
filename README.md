@@ -231,6 +231,30 @@ Here are some example `.json` configuration files:
 
 ---
 
+## Release Notes
+
+### 3.0.0
+  * Added additional optional configuration options to `uploadNFTs.js`
+    * Added `metadata` to set custom metadata placeholders values for each NFT
+    * Added `metadata_format` to set dynamic custom metadata placeholders values for each NFT
+    * Added `startingNumber` to set the number to start the process with instead of at 1
+    * Added `limitedQuantity` to set the number of NFTs to upload before it stops
+    * Added `dryRun` to disable any API calls to NFT MAKER PRO
+  * Added the ability to include a `$` wildcard in the `url` of the `file` to dynamically generate URLs for projects with individually unique images/files
+  * Created the initial version of `deleteNFTs.js` to delete NFTs in an NFT Project by `id`, `id_range`, and `all`
+  * Organized the `README.md` to include a larger description, purpose, and use cases
+  
+### 2.0.0
+  * Introduced breaking change in the JSON configuration on how we deal with files in order to introduce the subfiles concept
+  * Organized the `README.md` to add more details on setup and configuration examples
+
+### 1.0.0
+  * Initialized the repo/codebase
+  * Created the initial version of `uploadNFTs.js`
+  * Created a basic `README.md`
+
+---
+
 ## Future Scripts
 * Create `filesToURLs.js` which accepts a directory and uploads the contents to a public location and returns the URLs to use with other scripts
 
@@ -245,3 +269,7 @@ Here are some example `.json` configuration files:
 
 ## Potential Enhancements
 * Reconfigure to be an `npm` package so users just need to create `.json` files instead of needing to download the repository
+
+---
+
+Have questions or suggestions? Want to get paid to contribute? Reach out to [@AdaCaricatures](https://twitter.com/AdaCaricatures) or [justin@cardanocaricatures.com](mailto:justin@cardanocaricatures.com)
