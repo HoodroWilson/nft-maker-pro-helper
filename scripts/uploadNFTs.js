@@ -24,7 +24,8 @@ const app = async () => {
             // Don't attempt to create this NFT if it's disabled in the configuration file, if it's not set then try to create it
             if(NFT.enabled == null || NFT.enabled) {
                 console.log("processing the NFTs for " + NFT.asset_name);
-                for(let mintNumber = 1; mintNumber <= NFT.quantity; mintNumber++) {
+                let startingNumber = (NFT.startingNumber != null) ? NFT.startingNumber : 1;
+                for(let mintNumber = startingNumber; mintNumber <= NFT.quantity; mintNumber++) {
                     // Setup the NFT's data
                     let padding = _.padStart(mintNumber + "", NFT.quantity.toString().length, "0");
                     let assetName = NFT.asset_name + padding;
@@ -33,7 +34,7 @@ const app = async () => {
                         previewImageNft: {
                             name: NFT.asset_name,
                             mimetype: NFT.file.mime_type,
-                            fileFromsUrl: NFT.file.url
+                            fileFromsUrl: _.replace(NFT.file.url, "$", padding)
                         }
                     };
 
@@ -56,7 +57,7 @@ const app = async () => {
                             let subfileData = {
                                 name: NFT.asset_name,
                                 mimetype: subfile.mime_type,
-                                fileFromsUrl: subfile.url
+                                fileFromsUrl: _.replace(subfile.url, "$", padding)
                             };
                             if(body.previewImageNft.metadataPlaceholder != null) {
                                 subfileData.metadataPlaceholder = body.previewImageNft.metadataPlaceholder;
@@ -69,19 +70,34 @@ const app = async () => {
                     console.log("processing " + assetName);
                     let uploadNftUrl = "/UploadNft/" + process.env.NFT_MAKER_PRO_API_KEY + "/" + NFT.nft_maker_project_id;
                     let alreadyExists = false;
-                    let uploadNftResponse = await NFTMAKERPROAPI.post(uploadNftUrl, body).catch(function (error) {
-                        if(error.response && error.response.data && error.response.data.errorCode === 66) {
-                            alreadyExists = true;
-                        } else {
-                            console.error("error with uploading " + assetName);
-                            console.error(body);
-                            console.error(body.previewImageNft.metadataPlaceholder);
-                            if(error.response) {
-                                console.error(error.response.data);
-                                console.error(error.response.status);
+                    let uploadNftResponse = null;
+
+                    if(NFT.dryRun) {
+                        // If it's a dry run then fake a success response and log the body
+                        uploadNftResponse = {
+                            status: 200
+                        };
+                        let bodyCopy = body;
+                        console.log(bodyCopy.previewImageNft.metadataPlaceholder);
+                        delete bodyCopy.previewImageNft.metadataPlaceholder;
+                        console.log(bodyCopy.previewImageNft);
+                        delete bodyCopy.previewImageNft;
+                        console.log(bodyCopy);
+                    } else {
+                        uploadNftResponse = await NFTMAKERPROAPI.post(uploadNftUrl, body).catch(function(error) {
+                            if(error.response && error.response.data && error.response.data.errorCode === 66) {
+                                alreadyExists = true;
+                            } else {
+                                console.error("error with uploading " + assetName);
+                                console.error(body);
+                                console.error(body.previewImageNft.metadataPlaceholder);
+                                if(error.response) {
+                                    console.error(error.response.data);
+                                    console.error(error.response.status);
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
 
                     // Interpret the response from the API call
                     if(uploadNftResponse != null && uploadNftResponse.status === 200) {
@@ -109,6 +125,11 @@ const app = async () => {
                             console.log("going to sleep and then trying again - "  + JSON.stringify(track));
                             await helper.sleep(15000);
                         }
+                    }
+
+                    if(NFT.limitedQuantity != null && track.processed >= NFT.limitedQuantity) {
+                        console.log("intentionally stopping early after " + NFT.limitedQuantity);
+                        break;
                     }
 
                     await helper.sleep(200);
