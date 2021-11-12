@@ -13,7 +13,8 @@ const app = async () => {
     let track = {
         processed: 0,
         uploaded: 0,
-        error: 0
+        error: 0,
+        total_processed: 0,
     };
 
     // Name the loop so we can break from it if we need to
@@ -103,9 +104,11 @@ const app = async () => {
                     if(uploadNftResponse != null && uploadNftResponse.status === 200) {
                         track.uploaded++;
                         track.processed++;
+                        track.total_processed++;
                         console.log("processed " + assetName + " - " + JSON.stringify(track));
                     } else if(alreadyExists) {
                         track.processed++;
+                        track.total_processed++;
                         console.log("processed " + assetName + " and it already exists - " + JSON.stringify(track));
                     } else {
                         console.error("error processing " + assetName);
@@ -137,6 +140,8 @@ const app = async () => {
             } else {
                 console.log("skipping the NFTs for " + NFT.asset_name);
             }
+
+            track.processed = 0;
         }
 
     console.log("finished - "  + JSON.stringify(track));
